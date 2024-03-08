@@ -38,5 +38,5 @@ var contacts: ArrayList<Contact> = ArrayList()
 var note:String = ""
 val REQUEST_CODE_READ_CONTACTS = 1
  var READ_CONTACTS_GRANTED = false
-var indexOfNote:Long = 0
+var noteText = ""
 

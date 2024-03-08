@@ -44,8 +44,8 @@ import com.example.datastorage.data.NoteDao
 import com.example.datastorage.data.READ_CONTACTS_GRANTED
 import com.example.datastorage.data.REQUEST_CODE_READ_CONTACTS
 import com.example.datastorage.data.contacts
-import com.example.datastorage.data.indexOfNote
 import com.example.datastorage.data.note
+import com.example.datastorage.data.noteText
 import com.example.datastorage.ui.theme.DataStorageTheme
 
 
@@ -168,10 +168,7 @@ class MainActivity : ComponentActivity() {
             cursor.close()
         }
     }
-    @Composable
-    fun saveNote():String{
-        return noteDao.getById(indexOfNote).name;
-    }
+
 }
 
 @Composable
@@ -219,8 +216,6 @@ fun ContactsListTopAppBar() {
     )
 }
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactItem(
@@ -248,22 +243,23 @@ fun ContactItem(
                     .fillMaxSize()
                     .align(Alignment.CenterHorizontally)
             )
-            indexOfNote++
+
         }
     }
 }
 @Composable
 fun NoteAddition(onClick: () -> Unit, ){
     Card {
-        var text = saveNote()
+        var text = noteText
 
         TextField(
-            value = text.name,
+            value = text,
             onValueChange = { newText ->
                 text = newText },
             label = { Text("Enter your note") },
             modifier = Modifier.padding(16.dp)
         )
+        noteText = text
 
         Button(onClick = { onClick },
             modifier = Modifier.align(Alignment.CenterHorizontally)) {
