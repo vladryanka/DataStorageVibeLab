@@ -150,10 +150,7 @@ fun ContactsListApp() {
             }
         }
     }
-
 }
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -205,21 +202,6 @@ fun ContactItem(
         }
     }
 }
-/*
-@Composable
-fun ContactInformation(
-    name: String,
-    number: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.clickable(onClick = {
-            onClick()
-        })
-    ) {
-
-    }
-}*/
 
 @Preview(showBackground = true)
 @Composable
