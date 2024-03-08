@@ -3,10 +3,12 @@ package com.example.datastorage.data
 import android.content.ContentResolver
 import android.content.Context
 import android.provider.ContactsContract
+import com.example.datastorage.MainActivity
 
 data class Contact(
     val name:String,
-    val number: String
+    val number: String,
+    val id: Int
 )
 
 fun getContacts(context: Context): List<String> {
@@ -33,5 +35,8 @@ fun getContacts(context: Context): List<String> {
 }
 
 var contacts: ArrayList<Contact> = ArrayList()
+var note:String = ""
 val REQUEST_CODE_READ_CONTACTS = 1
  var READ_CONTACTS_GRANTED = false
+var indexOfNote:Long = 0
+

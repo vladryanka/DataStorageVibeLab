@@ -1,10 +1,11 @@
 package com.example.datastorage
 
+import android.Manifest
 import android.content.ContentResolver
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,11 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,21 +33,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.room.Room.databaseBuilder
+import com.example.datastorage.data.AppDatabase
 import com.example.datastorage.data.Contact
+import com.example.datastorage.data.Note
+import com.example.datastorage.data.NoteDao
 import com.example.datastorage.data.READ_CONTACTS_GRANTED
 import com.example.datastorage.data.REQUEST_CODE_READ_CONTACTS
 import com.example.datastorage.data.contacts
+import com.example.datastorage.data.indexOfNote
+import com.example.datastorage.data.note
 import com.example.datastorage.ui.theme.DataStorageTheme
-import android.Manifest
-import android.database.Cursor
 
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        private lateinit var instance: MainActivity
+        fun getInstance(): MainActivity {
+            return instance
+        }
+    }
 
+    var instance: MainActivity = this
+    private var database: AppDatabase? = null
+    val db: AppDatabase = MainActivity.getInstance().getDatabase()
+    val noteDao: NoteDao = db.noteDao()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        instance = this
+        database = databaseBuilder(this, AppDatabase::class.java, "database")
+            .build()
 
         setContent {
+            val navController = rememberNavController()
             DataStorageTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -72,10 +92,34 @@ class MainActivity : ComponentActivity() {
                     if (READ_CONTACTS_GRANTED) {
                         loadContacts()
                     }
-                    ContactsListApp()
+
+                    NavHost(navController, "main") {
+                        composable("main") {
+                            ContactsListApp {
+                                navController.navigate("second")
+                            }
+                        }
+                        composable("second") {
+                            NoteAddition {
+                                navController.navigate("main") {
+                                    popUpTo("main")
+                                    {
+                                        inclusive = true
+                                    }
+                                    val notes: Note = noteDao.getById(1)
+                                    noteDao.insert(note);
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
+    }
+
+    fun getDatabase(): AppDatabase {
+        return database!!
     }
 
     private fun loadContacts() {
@@ -115,7 +159,7 @@ class MainActivity : ComponentActivity() {
                                 } else {
                                     "Phone number not found"
                                 }
-                                contacts.add(Contact(name, phoneNumber))
+                                contacts.add(Contact(name, phoneNumber,1))
                             }
                         }
                     }
@@ -124,10 +168,14 @@ class MainActivity : ComponentActivity() {
             cursor.close()
         }
     }
+    @Composable
+    fun saveNote():String{
+        return noteDao.getById(indexOfNote).name;
+    }
 }
 
 @Composable
-fun ContactsListApp() {
+fun ContactsListApp(onClick: () -> Unit) {
 
     Scaffold(
         topBar = {
@@ -145,7 +193,7 @@ fun ContactsListApp() {
             ) { _, item ->
                 ContactItem(
                     contact = item,
-                    modifier = Modifier.padding(24.dp)
+                    modifier = Modifier.padding(24.dp),onClick
                 )
             }
         }
@@ -171,15 +219,16 @@ fun ContactsListTopAppBar() {
     )
 }
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactItem(
     contact: Contact,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
     Card(
-        onClick = { expanded = !expanded },
+        onClick = { onClick },
         modifier = modifier
     ) {
         Column(modifier = modifier) {
@@ -199,14 +248,37 @@ fun ContactItem(
                     .fillMaxSize()
                     .align(Alignment.CenterHorizontally)
             )
+            indexOfNote++
         }
     }
 }
+@Composable
+fun NoteAddition(onClick: () -> Unit, ){
+    Card {
+        var text = saveNote()
+
+        TextField(
+            value = text.name,
+            onValueChange = { newText ->
+                text = newText },
+            label = { Text("Enter your note") },
+            modifier = Modifier.padding(16.dp)
+        )
+
+        Button(onClick = { onClick },
+            modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text("Save")
+            note = text
+        }
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     DataStorageTheme {
-        ContactsListApp()
+        //NoteAddition()
+        //ContactsListApp(onClick)
     }
 }
