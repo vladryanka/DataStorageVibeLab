@@ -39,7 +39,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room.Room.databaseBuilder
 import com.example.datastorage.data.AppDatabase
 import com.example.datastorage.data.Contact
-import com.example.datastorage.data.Note
 import com.example.datastorage.data.NoteDao
 import com.example.datastorage.data.READ_CONTACTS_GRANTED
 import com.example.datastorage.data.REQUEST_CODE_READ_CONTACTS
@@ -59,7 +58,7 @@ class MainActivity : ComponentActivity() {
 
     var instance: MainActivity = this
     private var database: AppDatabase? = null
-    val db: AppDatabase = MainActivity.getInstance().getDatabase()
+    val db: AppDatabase = getInstance().getDatabase()
     val noteDao: NoteDao = db.noteDao()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,7 +105,6 @@ class MainActivity : ComponentActivity() {
                                     {
                                         inclusive = true
                                     }
-                                    val notes: Note = noteDao.getById(1)
                                     noteDao.insert(note);
                                 }
                             }
